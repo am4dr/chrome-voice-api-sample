@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <script src="rec.js"></script>
+<style>
+#voices-interim {
+    color: gray;
+}
+#voices-interim.active {
+    display: list-item;
+}
+#voices-interim:not(.active) {
+    display: none;
+}
+</style>
+    </head>
+    <body>
+        <button class="rec-start-button">START</button>
+        <button class="rec-end-button">END</button>
+
+        <ul id="voices">
+            <li id="voices-interim" class="inactive voice"></li>
+        </ul>
+
+
+        <template id="voice-template">
+            <li class="voice"></li>
+        </template>
+
+
+
+        <script>
+            'use strict';
+const voices = document.querySelector('#voices');
+const voiceTemplate = document.querySelector('#voice-template');
+const recStartButton = document.querySelector('.rec-start-button');
+const recEndButton = document.querySelector('.rec-end-button');
+const voiceInputInterim = document.querySelector('#voices-interim');
+
+const recognition = newRecognition();
+
+
+function createVoiceElement(text) {
+    const temp = document.importNode(voiceTemplate.content, true);
+    temp.querySelector('.voice').appendChild(document.createTextNode(text));
+    return temp;
+}
+
+function appendVoice(text) {
+    const voiceNode = createVoiceElement(text);
+    voices.insertBefore(voiceNode, voiceInputInterim);
+}
+
+//async function inputVoiceAcync() {
+//    const record = await recAsync();
+//    const script = record.results[0][0].transcript;
+//    if (script) {
+//        appendVoice(script);
+//    }
+//}
+function updateVoiceInput(text, isFinal) {
+    if (isFinal) {
+        voiceInputInterim.innerText = '';
+        voiceInputInterim.classList.remove('active');
+        appendVoice(text);
+    } else {
+        voiceInputInterim.innerText = text;
+        voiceInputInterim.classList.add('active');
+    }
+}
+
+function inputVoiceContinuous(rec) {
+    // Android ChromeではcontinuousとinterimResultを同時に使うと
+    // 認識途中の結果が来ない挙動をする
+    //rec.continuous = true;
+    rec.interimResults = true;
+    rec.onresult = it => {
+        const results = it.results;
+        const result = results[results.length-1];
+        const script = result[0].transcript;
+        if (script) {
+            updateVoiceInput(script, result.isFinal);
+        }
+    };
+    rec.start();
+}
+recStartButton.addEventListener('click', it => inputVoiceContinuous(recognition));
+recEndButton.addEventListener('click', it => recognition.stop());
+        </script>
+    </body>
+</html>
+
+
+
