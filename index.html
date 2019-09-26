@@ -81,6 +81,7 @@ function inputVoiceContinuous(rec) {
             updateVoiceInput(script, result.isFinal);
         }
     };
+    rec.onend = it => rec.start();
     rec.start();
 }
 recStartButton.addEventListener('click', it => inputVoiceContinuous(recognition));
